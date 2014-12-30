@@ -14,49 +14,70 @@ public class Graph {
 
     public int getDistance(String from, String to){
 
+        /*Réglages pour les tests aux limites*/
+
         if (this.vertices.isEmpty()){System.out.println("Le graphe est vide"); return 0;}
+
         if (Objects.equals( from, to )){System.out.println("La ville d'arrivee est aussi celle de depart"); return 0;}
 
-        int distanceOptimale = 0;
-        int longueurMinimaleCheminsPossibles = 0;
-        int nombreIteration = 0;
-        int tailleMaxChemin = this.vertices.size();
         List<String> nomsVillesGraphe = new ArrayList<String>();
 
         for (Vertex vertex : this.vertices) {
             nomsVillesGraphe.add(vertex.getName());
         }
+
         if (!nomsVillesGraphe.contains(from)){System.out.println("La ville de depart n'est pas dans le graphe"); return 0;}
+
         if (!nomsVillesGraphe.contains(to)){System.out.println("La ville d'arrivee n'est pas dans le graphe"); return 0;}
 
+
+
+        /*Début de l'algo'. Idée retenue en faisant croître les chemins en complexifiant peu à peu les tests.* */
+
+        int distanceOptimale = 0; /*On y stocke la longueur du meilleur chemin déjâ trouvé pour aller de la ville de départ à la ville d'arrivée*/
+
+        int longueurMinimaleCheminsPossibles = 0; /*C'est la longueur minimale parmis tous les chemins partant de la ville de départ et passant par le meme nombre de ville qu'il y a eu d'itération de la boucle while*/
+
+        int nombreIteration = 0;
+
+        int tailleMaxChemin = this.vertices.size(); /*Une taille que le chemin le plus court ne peut pas depasser*/
 
         for (Vertex vertex : this.vertices) {
             if (Objects.equals(from, vertex.getName())) {
 
-                List<Edge> possiblePaths = new ArrayList<Edge>();
+                /*On s'interesse à la liste de tous les chemins possibles partant de la bonne ville et passant par le meme nombre de ville rangés dans possiblePath.*/
+
+                List<Edge> possiblePaths = new ArrayList<Edge>();  /*Un chemin est representé par un Edge dont l'attribut target est la dernière étape et l'attribut distance est la longueur.*/
                 Edge depart = new Edge(vertex, 0);
                 possiblePaths.add(depart);
                 while (distanceOptimale == 0 || longueurMinimaleCheminsPossibles < distanceOptimale) {
+
+                /*A chaque itération, on remplace dans possiblePaths tous les chemins possibles partant de la ville de départ passant par n villes avec tous les chemins possibles partant de la
+                ville de départ passant par n+1 villes. Ce n'est plus la peine de chercher le plus court chemin parmi ces derniers lorsque leur distance minimale a dépassée celle du meilleur bon chemin déjâ trouvé.*/
+
                     nombreIteration ++;
-                    if (nombreIteration > tailleMaxChemin+2){System.out.println("Il n'y a pas de chemin possible entre ces deux villes"); distanceOptimale = 0; break;}
-                    System.out.println("nouvelle iteration n"+nombreIteration);
+
+                    if (nombreIteration > tailleMaxChemin+2 && distanceOptimale == 0){System.out.println("Il n'y a pas de chemin possible entre ces deux villes"); distanceOptimale = 0; break;}
+
                     for (ListIterator<Edge> iter = possiblePaths.listIterator(); iter.hasNext();) {
+
                         Edge chemin = iter.next();
+
                         iter.remove();
+
                         for (ListIterator<Edge> iter2 = chemin.getTarget().getEdges().listIterator(); iter2.hasNext();) {
+
                             Edge etape = iter2.next();
+
                             if (this.vertices.contains(etape.getTarget())) {
 
                                 Edge newEtape = new Edge(etape.getTarget(),etape.getDistance() + chemin.getDistance());
 
                                 iter.add(newEtape);
-                                System.out.println("ville : "+etape.getTarget().getName()+" distance : "+newEtape.getDistance());
-                                System.out.println("distance chemin precedant : " + chemin.getDistance());
 
 
                                 if (Objects.equals(etape.getTarget().getName(), to) && (distanceOptimale == 0 || distanceOptimale > newEtape.getDistance())) {
                                     distanceOptimale = newEtape.getDistance();
-                                    System.out.println("Nouvelle Distance! : "+distanceOptimale);
                                 }
 
                             }
@@ -65,14 +86,18 @@ public class Graph {
 
 
                     }
+
                     longueurMinimaleCheminsPossibles = 0;
+
                     for (ListIterator<Edge> iter = possiblePaths.listIterator(); iter.hasNext();){
+
                         Edge chemin = iter.next();
+
                         if (longueurMinimaleCheminsPossibles == 0 || longueurMinimaleCheminsPossibles > chemin.getDistance()){
+
                             longueurMinimaleCheminsPossibles = chemin.getDistance();
                         }
                     }
-                    System.out.println("longueur minimale : " + longueurMinimaleCheminsPossibles);
                 }
             }
         }
@@ -81,140 +106,3 @@ public class Graph {
         return distanceOptimale;
     }
 }
-
-/*int dmin = 0;
-        int distance = 0;
-        List<Path> possiblePaths = new ArrayList<Path>();
-        List<Path> possiblePaths2 = new ArrayList<Path>();
-        for (Vertex vertex : this.vertices) {
-            if (Objects.equals(from, vertex.getName())) {
-                List<Vertex> startVertex = new ArrayList<Vertex>();
-                startVertex.add(vertex);
-                Path depart = new Path(0, startVertex);
-                possiblePaths.add(depart);
-                while ((dmin <= distance || distance == 0) && !possiblePaths.isEmpty()) {
-                    possiblePaths2=possiblePaths;
-                    for (Path path : possiblePaths) {
-                        for (Edge newStep : path.getSteps().get(path.getSteps().size() - 1).getEdges()) {
-                            if (this.vertices.contains(newStep.getTarget()) && !path.getSteps().contains(newStep.getTarget())) {/*//*&& !path.getSteps().contains(newStep.getTarget()*//**//*){
-                                int newLongueur = path.getLongueur() + newStep.getDistance();
-                                List<Vertex> newSteps = new ArrayList<Vertex>();
-                                newSteps = path.getSteps();
-                                newSteps.add(newStep.getTarget());
-                                System.out.println("nouvelle ville : " + newStep.getTarget().getName());
-                                Path newPath = new Path(newLongueur, newSteps);
-                                possiblePaths2.add(newPath);
-                            }
-                        }
-                        possiblePaths2.remove(path);
-                    }
-                    possiblePaths=possiblePaths2;
-                    for (Path path : possiblePaths) {
-                        if (Objects.equals(path.getSteps().get(path.getSteps().size() - 1).getName(), to) && (distance>path.getLongueur() || distance == 0)) {
-                            distance = path.getLongueur();
-                            System.out.println("distance trouvée : "+distance);
-
-                        }
-                    }
-                    dmin = 0;
-                    for (Path path : possiblePaths){
-                        if (dmin == 0 || dmin > path.getLongueur()){
-                            dmin = path.getLongueur();
-                            System.out.println("dmin : "+dmin);
-                        }
-                    }
-                }
-
-
-            }
-
-            }*/
-
-/*int distance=0;
-        int dmin = 0;
-        List<Path> possiblePaths = new ArrayList<Path>();
-        List<Path> possiblePaths2 = new ArrayList<Path>();
-        for (Vertex vertex : this.vertices) {
-            if (Objects.equals(from, vertex.getName())) {
-                List<Vertex> startVertex = new ArrayList<Vertex>();
-                startVertex.add(vertex);
-                Path depart = new Path(0,startVertex);
-                possiblePaths.add(depart);
-
-                while ((dmin < distance || distance == 0) && (!possiblePaths.isEmpty())) {
-                    possiblePaths2 = possiblePaths;
-
-                    for (Path path : possiblePaths) {
-                        if (Objects.equals(path.getSteps().get(path.getSteps().size() - 1).getName(), to)) {
-                            if (( distance > path.getLongueur() ) || distance == 0){
-                                distance = path.getLongueur();
-                            }
-                        }
-
-                        for (Edge newStep : path.getSteps().get(path.getSteps().size() - 1).getEdges()){
-                            if ( this.vertices.contains(newStep.getTarget()) *//*&& !path.getSteps().contains(newStep.getTarget()*//*){
-                                int newLongueur = path.getLongueur() + newStep.getDistance();
-                                List<Vertex> newSteps = new ArrayList<Vertex>();
-                                newSteps = path.getSteps();
-                                newSteps.add(newStep.getTarget());
-                                Path newPath = new Path(newLongueur, newSteps);
-                                possiblePaths2.add(newPath);
-                            }
-                        }
-
-                    possiblePaths2.remove(path);
-                    }
-                    possiblePaths = possiblePaths2;
-                    dmin = 0;
-                    for (Path path : possiblePaths){
-                        if ( (path.getLongueur() < dmin) || dmin == 0 ){
-                            dmin = path.getLongueur();
-                        }
-                    }
-                }
-
-
-                }
-
-
-
-
-            }
-
-        return distance;*/
-/*int distance = 0;
-
-        for (Vertex vertex : this.vertices){
-            if (Objects.equals( from , vertex.getName() ) )
-                for (Edge edge : vertex.getEdges() ) {
-                    if ( Objects.equals(edge.getTarget().getName(), to) && this.vertices.contains(edge.getTarget()) ){
-                        distance = edge.getDistance();
-                    }
-
-                }
-                if (distance == 0){
-                    for (Edge edge : vertex.getEdges()){
-                        if (this.vertices.contains(edge.getTarget())) {
-                            for (Edge edge2 : edge.getTarget().getEdges()) {
-                                if (Objects.equals(edge2.getTarget().getName(), to) && this.vertices.contains(edge2.getTarget()) ) {
-                                    distance = edge2.getDistance() + edge.getDistance();
-                                    break;
-                                }
-                                if (Objects.equals(edge2.getTarget().getName(), to) && this.vertices.contains(edge2.getTarget())) {
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-
-        }
-
-
-
-
-                    /*if (this.vertices.contains(edge.getTarget()) && Objects.equals(edge.getTarget().getName(), to))
-                        distance = edge.getDistance();*/
-
