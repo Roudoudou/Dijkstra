@@ -59,6 +59,8 @@ public class Graph {
 
                     if (nombreIteration > tailleMaxChemin+2 && distanceOptimale == 0){System.out.println("Il n'y a pas de chemin possible entre ces deux villes"); distanceOptimale = 0; break;}
 
+                    /*Remplacement par les chemins passant par une ville de plus*/
+
                     for (ListIterator<Edge> iter = possiblePaths.listIterator(); iter.hasNext();) {
 
                         Edge chemin = iter.next();
