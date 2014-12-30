@@ -59,7 +59,8 @@ public class Graph {
 
                     if (nombreIteration > tailleMaxChemin+2 && distanceOptimale == 0){System.out.println("Il n'y a pas de chemin possible entre ces deux villes"); distanceOptimale = 0; break;}
 
-                    /*Remplacement par les chemins passant par une ville de plus*/
+                    /*Remplacement par les chemins passant par une ville de plus grâce à deux boucles for.
+                    Pour chaque chemin de possiblePaths, on va chercher les nouveaux chemins possibles parmis tous ses voisins dans le graphe*/
 
                     for (ListIterator<Edge> iter = possiblePaths.listIterator(); iter.hasNext();) {
 
@@ -79,7 +80,8 @@ public class Graph {
 
 
                                 if (Objects.equals(etape.getTarget().getName(), to) && (distanceOptimale == 0 || distanceOptimale > newEtape.getDistance())) {
-                                    distanceOptimale = newEtape.getDistance();
+
+                                    distanceOptimale = newEtape.getDistance(); /*Si le chemin qu'on ajoute est le nouveau bon plus court chemin' on stocke sa longueur*/
                                 }
 
                             }
